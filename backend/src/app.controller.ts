@@ -1,12 +1,21 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { ScannerService } from './scanner/scanner.service';
+import { WowApiService } from './wow-api/wow-api.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly scanner: ScannerService,
+    private readonly wowApi: WowApiService,
+  ) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHello(): any {
+    return this.scanner.scan();
+  }
+
+  @Get('/realms')
+  async getRealms() {
+    return await this.wowApi.getConnectedRealm();
   }
 }
