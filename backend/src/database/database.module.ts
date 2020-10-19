@@ -18,6 +18,7 @@ import { Repository } from 'typeorm';
       synchronize: true,
       autoLoadEntities: true,
       logging: 'all',
+      cache: true,
     }),
     inject: [ConfigService],
   })],
