@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ScannerService } from './scanner/scanner.service';
 import { WowApiService } from './wow-api/wow-api.service';
 
+
 @Controller()
 export class AppController {
   constructor(
