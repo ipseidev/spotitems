@@ -8,7 +8,8 @@ export class AppController {
   constructor(
     private readonly scanner: ScannerService,
     private readonly wowApi: WowApiService,
-  ) {}
+  ) {
+  }
 
   @Get()
   getHello(): any {

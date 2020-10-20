@@ -6,7 +6,8 @@ export class WowApiService {
   constructor(
     private readonly http: HttpService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+  }
 
   /**
    * Retourne la liste des serveurs en ligne
@@ -21,7 +22,6 @@ export class WowApiService {
     });
 
     const url = `${baseUrl}/connected-realm/index?${searchParam.toString()}`;
-
     const { data } = await this.http.get(url).toPromise();
     return data.connected_realms.map(url =>
       url.href.match(/[0-9]+/).toString(10),
