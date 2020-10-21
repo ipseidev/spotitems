@@ -1,10 +1,9 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { ScannerModule } from '../scanner/scanner.module';
 
 @Module({
-  imports: [forwardRef(() => ScannerModule),
-  ],
+  imports: [ScannerModule],
   providers: [JobsService],
   exports: [JobsService],
 })

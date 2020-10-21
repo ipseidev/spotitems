@@ -7,6 +7,7 @@ import { WowApiModule } from './wow-api/wow-api.module';
 import { DatabaseModule } from './database/database.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JobsModule } from './jobs/jobs.module';
+import { UserModule } from './api/user/user.module';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { JobsModule } from './jobs/jobs.module';
     DatabaseModule,
     ScheduleModule.forRoot(),
     JobsModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

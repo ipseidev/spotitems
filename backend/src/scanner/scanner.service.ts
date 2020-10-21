@@ -1,4 +1,4 @@
-import { forwardRef, HttpService, Inject, Injectable, Logger } from '@nestjs/common';
+import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { from, Observable } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { ConfigService } from '@nestjs/config';
@@ -7,8 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from '../database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '../database/entities/user.entity';
-import { JobsService } from '../jobs/jobs.service';
 import { filter, switchMap, take } from 'rxjs/operators';
+import { operatorFunctions } from './operatorsFunction/operatorsFunctions';
 
 @Injectable()
 export class ScannerService {
@@ -16,7 +16,6 @@ export class ScannerService {
     private readonly http: HttpService,
     private readonly config: ConfigService,
     private readonly wowApi: WowApiService,
-    private readonly  jobs: JobsService,
     @InjectRepository(Auction) private auctionRepository: Repository<Auction>,
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {
@@ -27,7 +26,9 @@ export class ScannerService {
    * de chaque serveur
    */
   public async scan() {
+    Logger.log('Début du scan....');
     const users = await this.userRepository.find();
+    Logger.debug(users);
     const realms = await this.wowApi.getConnectedRealm();
     const Urls = this.buildCallUrl(realms);
     const resultObservable = this.buildFetchPromise(Urls);
@@ -38,7 +39,14 @@ export class ScannerService {
           from(response.data.auctions)
             .pipe(
               take(5),
-              switchMap(async auction => await this.auctionFilter(auction, users) ? auction : undefined),
+              switchMap(async auction => {
+                const newAuction = this.mapAuctionByUser(auction, users);
+                if (newAuction.users.length > 0) {
+                  return newAuction;
+                } else {
+                  return;
+                }
+              }),
               filter(auction => typeof auction !== 'undefined'),
             )
             .subscribe(async auction => {
@@ -50,16 +58,22 @@ export class ScannerService {
     });
   }
 
-  private async auctionFilter(auction: any, users: User[]): Promise<boolean> {
-    const operatorFunctions = {
-      'eq': (auction, type, value) => auction[type] === value,
-      'gt': (auction, type, value) => auction[type] > value,
-    };
+  private mapAuctionByUser(auction: any, users: User[]): any {
+    let newAuction = { ...auction, users: [] };
+    users.map((user) => {
 
-    return users[0].profile.auction_rules.reduce((acc, current) => {
-      return operatorFunctions[current.operator](auction, current.type, current.value);
-    }, false);
+      /**
+       * TODO: Penser à un système de filtre dynamique
+       */
+      const isInterestedByAuction = user.profile.auction_rules.reduce((acc, current) => {
+        return operatorFunctions[current.operator](auction, current.type, current.value);
+      }, false);
 
+      if (isInterestedByAuction) {
+        newAuction = { ...auction, users: [...newAuction.users, user.id] };
+      }
+    });
+    return newAuction;
   }
 
   private async saveAuctions(auction: any) {

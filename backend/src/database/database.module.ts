@@ -1,8 +1,7 @@
 import { Global, Module } from '@nestjs/common';
-import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Auction } from './entities/auction.entity';
-import { Repository } from 'typeorm';
+
 
 @Global()
 @Module({
