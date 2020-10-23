@@ -30,6 +30,18 @@ describe('operatorFuntions', () => {
     });
   });
 
+  it('should throw an error for an invalid operator', () => {
+    const fakeRule: RuleInterface = {
+      operator: 'like',
+      type: 'buyout',
+      value: 5,
+    };
+
+    expect(() => {
+      compareAuctionWithRules(fakeRule, {});
+    }).toThrow('Invalid operator');
+  });
+
   describe('multiple rules', () => {
     const fakeAuction = {
       name: 'sword',

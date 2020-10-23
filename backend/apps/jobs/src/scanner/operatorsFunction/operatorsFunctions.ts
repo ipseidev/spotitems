@@ -1,6 +1,12 @@
 import * as _ from 'lodash';
 import { RuleInterface } from '@core/types';
+import { throwError } from 'rxjs';
 
+/**
+ * Permet de rechercher le type de comparateur et de faire le test
+ * grace au get de lodash, on peux chercher un chemin complexe
+ * dans l'auction qui est passé.
+ */
 export const operatorFunctions = {
   eq: (auction, type, value) => _.get(auction, type) === value,
   gt: (auction, type, value) => _.get(auction, type) > value,
@@ -47,5 +53,9 @@ export function compareAuctionWithRules(auction, rule: RuleInterface) {
     }
   }
 
-  return operatorFunctions[rule.operator](auction, rule.type, rule.value);
+  try {
+    return operatorFunctions[rule.operator](auction, rule.type, rule.value);
+  } catch (e) {
+    throw new Error('Invalid operator');
+  }
 }
