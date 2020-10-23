@@ -17,6 +17,12 @@
       ],
       "@core/database/*": [
         "libs/database/src/*"
+      ],
+      "@core/types": [
+        "libs/types/src"
+      ],
+      "@core/types/*": [
+        "libs/types/src/*"
       ]
     }
   }

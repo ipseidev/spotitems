@@ -82,7 +82,9 @@
     ],
     "moduleNameMapper": {
       "@core/database/(.*)": "<rootDir>/libs/database/src/$1",
-      "@core/database": "<rootDir>/libs/database/src"
+      "@core/database": "<rootDir>/libs/database/src",
+      "@core/types/(.*)": "<rootDir>/libs/types/src/$1",
+      "@core/types": "<rootDir>/libs/types/src"
     }
   }
 }
