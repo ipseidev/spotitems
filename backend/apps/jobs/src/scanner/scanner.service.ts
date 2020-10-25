@@ -8,7 +8,10 @@ import { Auction } from '@core/database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '@core/database/entities/user.entity';
 import { filter, switchMap, take } from 'rxjs/operators';
-import { operatorFunctions } from './operatorsFunction/operatorsFunctions';
+import {
+  compareAuctionWithRules,
+  operatorFunctions,
+} from './operatorsFunction/operatorsFunctions';
 
 @Injectable()
 export class ScannerService {
@@ -64,12 +67,8 @@ export class ScannerService {
        * TODO: Penser à un système de filtre dynamique
        */
       const isInterestedByAuction = user.profile.auction_rules.reduce(
-        (acc, current) => {
-          return operatorFunctions[current.operator](
-            auction,
-            current.type,
-            current.value,
-          );
+        (acc, currentRule) => {
+          return compareAuctionWithRules(auction, currentRule);
         },
         false,
       );

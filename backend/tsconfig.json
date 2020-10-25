@@ -18,10 +18,10 @@
       "@core/database/*": [
         "libs/database/src/*"
       ],
-      "@core/types": [
+      "@core/interfaces": [
         "libs/types/src"
       ],
-      "@core/types/*": [
+      "@core/interfaces/*": [
         "libs/types/src/*"
       ]
     }

@@ -1,6 +1,5 @@
 import { compareAuctionWithRules } from './operatorsFunctions';
-import { RuleInterface } from '@core/types';
-import exp from 'constants';
+import { RuleInterface } from '@core/interfaces';
 
 describe('operatorFuntions', () => {
   describe('Simple rules', () => {
@@ -147,6 +146,85 @@ describe('operatorFuntions', () => {
         );
         expect(isValidComplexeAuction).toBe(false);
       });
+    });
+  });
+
+  describe('have rules', () => {
+    const fakeAuction = {
+      buyout: 5,
+      bonus: [6644, 5522, 2222],
+      modifiers: [
+        {
+          type: 1,
+          value: 25,
+        },
+        {
+          type: 2,
+          value: 14,
+        },
+      ],
+    };
+
+    it('should return true for a have rule with an objet', () => {
+      const fakeRule: RuleInterface = {
+        type: 'modifiers',
+        operator: 'have',
+        value: { type: 1, value: 25 },
+      };
+
+      const isValidHaveRules = compareAuctionWithRules(fakeAuction, fakeRule);
+      expect(isValidHaveRules).toBe(true);
+    });
+
+    it('should return true for a have rule with an array', () => {
+      const fakeRule: RuleInterface = {
+        type: 'bonus',
+        operator: 'have',
+        value: 2222,
+      };
+
+      const isValidHaveRules = compareAuctionWithRules(fakeAuction, fakeRule);
+      expect(isValidHaveRules).toBe(true);
+    });
+  });
+
+  describe('complexe rules', () => {
+    const fakeAuction = {
+      buyout: 5,
+      bonus: [6644, 5522, 2222],
+      modifiers: [
+        {
+          type: 1,
+          value: 25,
+        },
+        {
+          type: 2,
+          value: 14,
+        },
+      ],
+    };
+
+    it('should return true for a complexe rule', () => {
+      const fakeComplexeRule: RuleInterface = {
+        logical: 'AND',
+        rules: [
+          {
+            logical: 'OR',
+            rules: [
+              { type: 'bonus', operator: 'have', value: 1111 },
+              { type: 'bonus', operator: 'have', value: 2222 },
+            ],
+          },
+          {
+            type: 'buyout',
+            operator: 'lt',
+            value: 10,
+          },
+        ],
+      };
+
+      const isValid = compareAuctionWithRules(fakeAuction, fakeComplexeRule);
+      expect(isValid).toBe(true);
     });
   });
 });

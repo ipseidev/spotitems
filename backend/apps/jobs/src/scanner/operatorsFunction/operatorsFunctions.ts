@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
-import { RuleInterface } from '@core/types';
-import { throwError } from 'rxjs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { RuleInterface } from '@core/interfaces';
 
 /**
  * Permet de rechercher le type de comparateur et de faire le test
@@ -13,7 +14,16 @@ export const operatorFunctions = {
   lt: (auction, type, value) => _.get(auction, type) < value,
   gte: (auction, type, value) => _.get(auction, type) >= value,
   lte: (auction, type, value) => _.get(auction, type) <= value,
-  nt: (auction, type, value) => _.get(auction, type) !== value,
+  ne: (auction, type, value) => _.get(auction, type) !== value,
+  have: (auction, type, value) => {
+    return _.get(auction, type).some(sub => {
+      if (typeof sub === 'object') {
+        return _.isEqual(sub, value);
+      } else {
+        return sub === value;
+      }
+    });
+  },
 };
 
 /**
