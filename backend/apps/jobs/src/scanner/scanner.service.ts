@@ -8,10 +8,8 @@ import { Auction } from '@core/database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '@core/database/entities/user.entity';
 import { filter, switchMap, take } from 'rxjs/operators';
-import {
-  compareAuctionWithRules,
-  operatorFunctions,
-} from './operatorsFunction/operatorsFunctions';
+import { compareAuctionWithRules } from './operatorsFunction/operatorsFunctions';
+import * as _ from 'lodash';
 
 @Injectable()
 export class ScannerService {
@@ -25,7 +23,8 @@ export class ScannerService {
 
   /**
    * Méthode principale qui permet de scanner les hotels des ventes
-   * de chaque serveur
+   * de chaque serveur et de comparer les ventes avec les règles définies par les utilisateur
+   * si une vente correspond a N règles d'utilisateur, cette vente est sauvegardé
    */
   public async scan() {
     Logger.log('Début du scan....');
@@ -60,34 +59,53 @@ export class ScannerService {
     });
   }
 
+  /**
+   * Retourne les auctions avec un tableau d'utilisateurs intéressés par la vente.
+   * Cela permettra de faire des recherches plus simple des ventes dans la base
+   *
+   * TODO: Utilisé un uuid dans les règles, pour pouvoir les mettres dans les ventes
+   * ça permettrait de dire a un utilisateur quelles règles a déclenché la notification
+   *
+   * @param auction
+   * @param users
+   * @private
+   */
   private mapAuctionByUser(auction: any, users: User[]): any {
     let newAuction = { ...auction, users: [] };
     users.map(user => {
-      /**
-       * TODO: Penser à un système de filtre dynamique
-       */
-      const isInterestedByAuction = user.profile.auction_rules.reduce(
-        (acc, currentRule) => {
-          return compareAuctionWithRules(auction, currentRule);
-        },
-        false,
+      const isInterestedByAuction = user.profile.auction_rules.some(rule =>
+        compareAuctionWithRules(auction, rule),
       );
 
       if (isInterestedByAuction) {
         newAuction = { ...auction, users: [...newAuction.users, user.id] };
       }
     });
-    return newAuction;
+    // retourne l'auction avec un tableau d'id utilisateurr unique
+    return { ...newAuction, users: _.uniq<number>(newAuction.users) };
   }
 
   private async saveAuctions(auction: any) {
     return this.auctionRepository.insert({ auction });
   }
 
+  /**
+   * Créé des observables de response axios pour pouvoir les traiter tout en libérant la méthode
+   * de scan (sans await)
+   *
+   * @param Urls
+   * @private
+   */
   private buildFetchPromise(Urls: string[]): Observable<AxiosResponse>[] {
     return Urls.map(url => this.http.get(url));
   }
 
+  /**
+   * Retourne les urls que doit appeler le jobs
+   *
+   * @param realms
+   * @private
+   */
   private buildCallUrl(realms: string[]): string[] {
     return realms.map(realm => {
       const searchParam = new URLSearchParams({
