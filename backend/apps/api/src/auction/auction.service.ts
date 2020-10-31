@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateAuctionDto } from './dto/create-auction.dto';
 import { UpdateAuctionDto } from './dto/update-auction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from '@core/database/entities/auction.entity';
-import { Repository, getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
+import { getRawAndCountFromQueryBuilder } from '../queriesHelper';
 
 @Injectable()
 export class AuctionService {
@@ -20,8 +21,8 @@ export class AuctionService {
    * Retourne les ventes qui correspond aux users_id passés
    * @param users_id
    */
-  findByUserIds(users_id: number[]) {
-    return getConnection()
+  async findByUserIds(users_id: number[]) {
+    const query = getConnection()
       .createQueryBuilder()
       .select('"A".auction', 'item')
       .from(subQuery => {
@@ -30,8 +31,9 @@ export class AuctionService {
           .addSelect("auction.auction -> 'users'", 'users')
           .from('auction', 'auction');
       }, 'A')
-      .where(`"A".users::jsonb @> '${JSON.stringify(users_id)}'`)
-      .getRawMany();
+      .where(`"A".users::jsonb @> '${JSON.stringify(users_id)}'`);
+
+    return await getRawAndCountFromQueryBuilder(query);
   }
 
   findOne(users_id: number | number[]) {}
