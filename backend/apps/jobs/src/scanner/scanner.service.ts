@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from '@core/database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '@core/database/entities/user.entity';
-import { filter, switchMap, take } from 'rxjs/operators';
+import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { compareAuctionWithRules } from './operatorsFunction/operatorsFunctions';
 import * as _ from 'lodash';
 
@@ -40,6 +40,7 @@ export class ScannerService {
           from(response.data.auctions)
             .pipe(
               take(5),
+              tap(auctions => Logger.debug(auctions, 'ScannerService', false)),
               switchMap(async auction => {
                 const newAuction = this.mapAuctionByUser(auction, users);
                 if (newAuction.users.length > 0) {
@@ -63,7 +64,7 @@ export class ScannerService {
    * Retourne les auctions avec un tableau d'utilisateurs intéressés par la vente.
    * Cela permettra de faire des recherches plus simple des ventes dans la base
    *
-   * TODO: Utilisé un uuid dans les règles, pour pouvoir les mettres dans les ventes
+   * TODO: Utilisé un uuid dans les règles, pour pouvoir les metres dans les ventes
    * ça permettrait de dire a un utilisateur quelles règles a déclenché la notification
    *
    * @param auction

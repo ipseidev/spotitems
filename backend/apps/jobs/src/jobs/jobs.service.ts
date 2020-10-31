@@ -4,15 +4,10 @@ import { Cron, CronExpression, Interval, Timeout } from '@nestjs/schedule';
 
 @Injectable()
 export class JobsService {
-  constructor(
-    private readonly scanerService: ScannerService,
-  ) {
-  }
+  constructor(private readonly scanerService: ScannerService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   public startScan() {
     this.scanerService.scan();
   }
-
-
 }
