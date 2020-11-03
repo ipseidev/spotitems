@@ -11,6 +11,6 @@ services:
       POSTGRES_USER: root
       POSTGRES_DB: spotitems
     ports:
-      - 5432:32774
+      - 5432:5432
 
 

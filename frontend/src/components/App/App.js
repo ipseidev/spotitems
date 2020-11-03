@@ -1,13 +1,18 @@
 import React from 'react';
 import Index from '../../pages';
 import Navbar from '../Navigation/Navbar';
+import {  QueryCache, ReactQueryCacheProvider } from 'react-query';
+
+
+const queryCache = new QueryCache();
+
 
 function App() {
   return (
-    <React.Fragment>
+    <ReactQueryCacheProvider queryCache={queryCache}>
       <Navbar />
       <Index />
-    </React.Fragment>
+    </ReactQueryCacheProvider>
   );
 }
 

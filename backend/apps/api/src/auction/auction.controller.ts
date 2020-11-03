@@ -12,7 +12,7 @@ import { AuctionService } from './auction.service';
 import { CreateAuctionDto } from './dto/create-auction.dto';
 import { UpdateAuctionDto } from './dto/update-auction.dto';
 
-@Controller('auction')
+@Controller('auctions')
 export class AuctionController {
   constructor(private readonly auctionService: AuctionService) {}
 
