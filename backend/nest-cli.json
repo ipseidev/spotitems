@@ -43,6 +43,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/types/tsconfig.lib.json"
       }
+    },
+    "discovery": {
+      "type": "application",
+      "root": "apps/discovery",
+      "entryFile": "main",
+      "sourceRoot": "apps/discovery/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/discovery/tsconfig.app.json"
+      }
     }
   }
 }

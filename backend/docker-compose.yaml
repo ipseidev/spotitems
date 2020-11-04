@@ -12,5 +12,9 @@ services:
       POSTGRES_DB: spotitems
     ports:
       - 5432:32774
-
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
 

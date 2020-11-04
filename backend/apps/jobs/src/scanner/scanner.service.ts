@@ -1,5 +1,5 @@
-import { HttpService, Injectable, Logger } from '@nestjs/common';
-import { from, Observable } from 'rxjs';
+import { HttpService, Inject, Injectable, Logger } from '@nestjs/common';
+import { from, Observable, of } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { WowApiService } from '../wow-api/wow-api.service';
@@ -7,9 +7,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from '@core/database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '@core/database/entities/user.entity';
-import { filter, switchMap, take, tap } from 'rxjs/operators';
+import {
+  concatMap,
+  delay,
+  filter,
+  mergeMap,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs/operators';
 import { compareAuctionWithRules } from './operatorsFunction/operatorsFunctions';
 import * as _ from 'lodash';
+import { ClientProxy } from '@nestjs/microservices';
+import * as pqueue from 'p-queue';
 
 @Injectable()
 export class ScannerService {
@@ -19,6 +29,7 @@ export class ScannerService {
     private readonly wowApi: WowApiService,
     @InjectRepository(Auction) private auctionRepository: Repository<Auction>,
     @InjectRepository(User) private userRepository: Repository<User>,
+    @Inject('DISCOVERY') private readonly discoveryClient: ClientProxy,
   ) {}
 
   /**
@@ -32,32 +43,76 @@ export class ScannerService {
     Logger.debug(users);
     const realms = await this.wowApi.getConnectedRealm();
     const Urls = this.buildCallUrl(realms);
-    const resultObservable = this.buildFetchPromise(Urls);
+    const resultPromise = this.buildFetchPromise(Urls);
+    const queue = new pqueue.default({ concurrency: 3, autoStart: true });
 
-    resultObservable.forEach(realm => {
+    resultPromise.forEach(p => {
+      queue.add(async () => {
+        Logger.debug('Hello wow api');
+        const data = await p;
+        const auctionToSave = data.data.auctions
+          .map(auction => {
+            const newAuction = this.mapAuctionByUser(auction, users);
+            if (newAuction.users.length > 0) {
+              return newAuction;
+            }
+            return;
+          })
+          .filter(auction => auction);
+
+        for (const auction of auctionToSave) {
+          await this.saveAuctions(auction);
+          this.discoveryClient.emit('new_item', auction);
+        }
+      });
+    });
+
+    /*resultPromise.forEach((p, i) => {
+      Logger.debug('Hello promise ' + i);
+      setTimeout(async () => {
+        Logger.debug('Hello wow api');
+        const { data } = await p;
+        Logger.debug(data.length);
+        const auctionToSave = data
+          .map(auction => {
+            const newAuction = this.mapAuctionByUser(auction, users);
+            if (newAuction.users.length > 0) {
+              return newAuction;
+            }
+            return;
+          })
+          .filter(auction => auction);
+
+        for (const auction of auctionToSave) {
+          await this.saveAuctions(auction);
+        }
+      }, i * 60000);
+    });
+*/
+    /*resultObservable.forEach(realm => {
       realm.subscribe({
         next: response =>
           from(response.data.auctions)
             .pipe(
-              take(5),
+              take(50),
               tap(auctions => Logger.debug(auctions, 'ScannerService', false)),
-              switchMap(async auction => {
+              switchMap(auction => {
                 const newAuction = this.mapAuctionByUser(auction, users);
                 if (newAuction.users.length > 0) {
                   return newAuction;
-                } else {
-                  return;
                 }
+                return;
               }),
               filter(auction => typeof auction !== 'undefined'),
             )
             .subscribe(async auction => {
               Logger.log(auction);
               await this.saveAuctions(auction);
+              this.discoveryClient.emit('new_item', auction);
             }),
         error: err => Logger.error(err),
       });
-    });
+    });*/
   }
 
   /**
@@ -97,8 +152,8 @@ export class ScannerService {
    * @param Urls
    * @private
    */
-  private buildFetchPromise(Urls: string[]): Observable<AxiosResponse>[] {
-    return Urls.map(url => this.http.get(url));
+  private buildFetchPromise(Urls: string[]): Promise<AxiosResponse>[] {
+    return Urls.map(url => this.http.get(url).toPromise());
   }
 
   /**
