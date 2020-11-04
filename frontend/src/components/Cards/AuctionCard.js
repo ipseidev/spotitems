@@ -2,7 +2,8 @@ import React from 'react';
 import TagTimeLeft from './TimeLeftIndicator/TagTimeLeft';
 
 const AuctionCard = (props) => {
-    const { id, buyout, time_left, server } = props.auction;
+    const { id, time_left } = props.auction.item;
+    console.log(props);
     return (
       <div className="column is-3">
         <div className="card">
@@ -19,7 +20,7 @@ const AuctionCard = (props) => {
             </div>
             <div className="content">
               <ul>
-                <li><p>Price : {buyout / 1000} POs</p></li>
+                <li><p>Price : {props.auction.item.buyout / 1000} POs</p></li>
                 <li><p>Ilvl : 28</p></li>
                 <li><p>id item : {id} </p></li>
               </ul>
