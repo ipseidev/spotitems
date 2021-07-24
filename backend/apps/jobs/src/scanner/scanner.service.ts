@@ -7,15 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Auction } from '@core/database/entities/auction.entity';
 import { Repository } from 'typeorm';
 import { User } from '@core/database/entities/user.entity';
-import {
-  concatMap,
-  delay,
-  filter,
-  mergeMap,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs/operators';
+
 import { compareAuctionWithRules } from './operatorsFunction/operatorsFunctions';
 import * as _ from 'lodash';
 import { ClientProxy } from '@nestjs/microservices';

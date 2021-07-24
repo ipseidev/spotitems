@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal">
+  <component name="dataSourceStorageLocal" created-in="WS-211.7628.25">
     <data-source name="spotitems" uuid="3ae5dd9f-bf1e-4e50-986c-925f4b1a18d1">
       <database-info product="PostgreSQL" version="13.0 (Debian 13.0-1.pgdg100+1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.2.5" dbms="POSTGRES" exact-version="13.0" exact-driver-version="42.2">
         <identifier-quote-string>&quot;</identifier-quote-string>
